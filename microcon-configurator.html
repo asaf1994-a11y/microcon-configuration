@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Microcon Integration Configurator</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700;800;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --dark-bg: #2b2d2e;
+            --darker-bg: #1a1b1c;
+            --green-primary: #7fff00;
+            --green-glow: rgba(127, 255, 0, 0.3);
+            --text-white: #ffffff;
+            --text-gray: #a8a8a8;
+            --card-bg: #363839;
+            --card-border: #4a4c4d;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: linear-gradient(135deg, var(--darker-bg) 0%, var(--dark-bg) 100%);
+            color: var(--text-white);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, var(--green-glow) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, var(--green-glow) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.3;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 30px 0;
+            margin-bottom: 30px;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: 8px;
+            color: var(--text-white);
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px var(--green-glow);
+            position: relative;
+            display: inline-block;
+        }
+
+        .logo::after {
+            content: '●';
+            color: var(--green-primary);
+            position: absolute;
+            right: -25px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .tagline {
+            font-size: 1rem;
+            color: var(--text-gray);
+            font-weight: 300;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        /* Progress Indicator */
+        .progress-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            padding: 0 10px;
+            animation: fadeIn 1s ease-out 0.3s both;
+        }
+
+        .progress-step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+        }
+
+        .progress-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--card-bg);
+            border: 2px solid var(--card-border);
+            margin: 0 auto 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 2;
+        }
+
+        .progress-step.active .progress-circle {
+            background: var(--green-primary);
+            border-color: var(--green-primary);
+            color: var(--darker-bg);
+            box-shadow: 0 0 20px var(--green-glow);
+        }
+
+        .progress-step.completed .progress-circle {
+            background: var(--green-primary);
+            border-color: var(--green-primary);
+            color: var(--darker-bg);
+        }
+
+        .progress-label {
+            font-size: 0.7rem;
+            color: var(--text-gray);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+
+        .progress-step.active .progress-label {
+            color: var(--green-primary);
+        }
+
+        .progress-line {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            width: 100%;
+            height: 2px;
+            background: var(--card-border);
+            z-index: 1;
+        }
+
+        .progress-step:last-child .progress-line {
+            display: none;
+        }
+
+        .progress-step.completed .progress-line {
+            background: var(--green-primary);
+        }
+
+        /* Question Card */
+        .question-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 30px 25px;
+            margin-bottom: 25px;
+            animation: slideInUp 0.6s ease-out;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .question-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-white);
+            letter-spacing: 1px;
+        }
+
+        .question-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-gray);
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        /* Option Cards */
+        .options-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .option-card {
+            background: var(--darker-bg);
+            border: 2px solid var(--card-border);
+            border-radius: 10px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .option-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--green-primary);
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .option-card:hover {
+            border-color: var(--green-primary);
+            transform: translateX(5px);
+        }
+
+        .option-card:hover::before {
+            transform: scaleY(1);
+        }
+
+        .option-card.selected {
+            border-color: var(--green-primary);
+            background: rgba(127, 255, 0, 0.05);
+            box-shadow: 0 0 30px var(--green-glow);
+        }
+
+        .option-card.selected::before {
+            transform: scaleY(1);
+        }
+
+        .option-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .option-level {
+            font-size: 0.75rem;
+            color: var(--green-primary);
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 2px;
+        }
+
+        .option-time {
+            font-size: 0.8rem;
+            color: var(--text-gray);
+            background: var(--card-bg);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        .option-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-white);
+        }
+
+        .option-description {
+            font-size: 0.85rem;
+            color: var(--text-gray);
+            line-height: 1.5;
+        }
+
+        .option-badge {
+            display: inline-block;
+            font-size: 0.7rem;
+            background: var(--green-primary);
+            color: var(--darker-bg);
+            padding: 3px 10px;
+            border-radius: 12px;
+            margin-top: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Navigation Buttons */
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 16px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .btn-primary {
+            background: var(--green-primary);
+            color: var(--darker-bg);
+            box-shadow: 0 4px 20px var(--green-glow);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #9fff3a;
+            box-shadow: 0 6px 30px var(--green-glow);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-white);
+            border: 2px solid var(--card-border);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--green-primary);
+            color: var(--green-primary);
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* Results Page */
+        .results-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 30px 25px;
+            margin-bottom: 20px;
+            animation: slideInUp 0.6s ease-out;
+        }
+
+        .results-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .results-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .results-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--green-primary);
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+        }
+
+        .results-subtitle {
+            font-size: 1rem;
+            color: var(--text-gray);
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--green-primary);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: var(--green-primary);
+            border-radius: 2px;
+        }
+
+        .supply-list {
+            list-style: none;
+            margin-bottom: 30px;
+        }
+
+        .supply-item {
+            background: var(--darker-bg);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 3px solid var(--green-primary);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: fadeInLeft 0.5s ease-out both;
+        }
+
+        .supply-item:nth-child(1) { animation-delay: 0.1s; }
+        .supply-item:nth-child(2) { animation-delay: 0.2s; }
+        .supply-item:nth-child(3) { animation-delay: 0.3s; }
+        .supply-item:nth-child(4) { animation-delay: 0.4s; }
+        .supply-item:nth-child(5) { animation-delay: 0.5s; }
+
+        .supply-icon {
+            font-size: 1.3rem;
+        }
+
+        .supply-text {
+            flex: 1;
+            font-size: 0.95rem;
+            color: var(--text-white);
+        }
+
+        .info-box {
+            background: rgba(127, 255, 0, 0.1);
+            border: 1px solid var(--green-primary);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .info-box-title {
+            font-weight: 600;
+            color: var(--green-primary);
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .info-box-text {
+            font-size: 0.9rem;
+            color: var(--text-gray);
+            line-height: 1.6;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+                transform: translateY(-50%) scale(1);
+            }
+            50% {
+                opacity: 0.6;
+                transform: translateY(-50%) scale(1.2);
+            }
+        }
+
+        /* Hidden class */
+        .hidden {
+            display: none !important;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 360px) {
+            .logo {
+                font-size: 2rem;
+            }
+            
+            .progress-circle {
+                width: 35px;
+                height: 35px;
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">MICROCON</div>
+            <div class="tagline">Integration Configurator</div>
+        </div>
+
+        <div class="progress-container" id="progressBar">
+            <div class="progress-step active" data-step="1">
+                <div class="progress-circle">1</div>
+                <div class="progress-label">Use Case</div>
+                <div class="progress-line"></div>
+            </div>
+            <div class="progress-step" data-step="2">
+                <div class="progress-circle">2</div>
+                <div class="progress-label">Hardware</div>
+                <div class="progress-line"></div>
+            </div>
+            <div class="progress-step" data-step="3">
+                <div class="progress-circle">3</div>
+                <div class="progress-label">Results</div>
+            </div>
+        </div>
+
+        <!-- Step 1: Use Case Selection -->
+        <div class="step-content" id="step1">
+            <div class="question-card">
+                <h2 class="question-title">What's your primary goal?</h2>
+                <p class="question-subtitle">Choose the integration level that matches your timeline and technical requirements.</p>
+                
+                <div class="options-grid">
+                    <div class="option-card" data-option="1">
+                        <div class="option-header">
+                            <span class="option-level">Level 1</span>
+                            <span class="option-time">⏱ 10 mins</span>
+                        </div>
+                        <div class="option-name">Full Operation Kit</div>
+                        <div class="option-description">Zero friction solution. Perfect for initial evaluation and lab demos.</div>
+                        <span class="option-badge">Out-of-the-Box</span>
+                    </div>
+
+                    <div class="option-card" data-option="2">
+                        <div class="option-header">
+                            <span class="option-level">Level 2</span>
+                            <span class="option-time">⏱ 15 mins</span>
+                        </div>
+                        <div class="option-name">Basic Operation</div>
+                        <div class="option-description">Ideal for bench testing with existing lab setup.</div>
+                        <span class="option-badge">Quick Start</span>
+                    </div>
+
+                    <div class="option-card" data-option="3">
+                        <div class="option-header">
+                            <span class="option-level">Level 3</span>
+                            <span class="option-time">⏱ 2 hours</span>
+                        </div>
+                        <div class="option-name">Docker Basic Integration</div>
+                        <div class="option-description">Designed for teams using NVIDIA Jetson Orin platform.</div>
+                        <span class="option-badge">Developer Path</span>
+                    </div>
+
+                    <div class="option-card" data-option="4">
+                        <div class="option-header">
+                            <span class="option-level">Level 4</span>
+                            <span class="option-time">⏱ 1-2 days</span>
+                        </div>
+                        <div class="option-name">HIVE + SDK</div>
+                        <div class="option-description">Custom software on our optimized hardware platform.</div>
+                        <span class="option-badge">Professional</span>
+                    </div>
+
+                    <div class="option-card" data-option="5">
+                        <div class="option-header">
+                            <span class="option-level">Level 5</span>
+                            <span class="option-time">⏱ 1-2 days</span>
+                        </div>
+                        <div class="option-name">Docker + SDK</div>
+                        <div class="option-description">Full system integration with your hardware and software.</div>
+                        <span class="option-badge">Advanced</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                <button class="btn btn-primary" id="step1Next" disabled>Continue</button>
+            </div>
+        </div>
+
+        <!-- Step 2: Hardware Configuration -->
+        <div class="step-content hidden" id="step2">
+            <div class="question-card">
+                <h2 class="question-title">Hardware Configuration</h2>
+                <p class="question-subtitle">Do you have any of the following equipment?</p>
+                
+                <div class="options-grid" id="hardwareOptions">
+                    <!-- Dynamic content will be loaded here -->
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                <button class="btn btn-secondary" id="step2Back">Back</button>
+                <button class="btn btn-primary" id="step2Next">View Results</button>
+            </div>
+        </div>
+
+        <!-- Step 3: Results -->
+        <div class="step-content hidden" id="step3">
+            <div class="results-card">
+                <div class="results-header">
+                    <div class="results-icon">🎯</div>
+                    <h2 class="results-title" id="resultsTitle">Your Configuration</h2>
+                    <p class="results-subtitle" id="resultsSubtitle"></p>
+                </div>
+
+                <h3 class="section-title">📦 We Supply</h3>
+                <ul class="supply-list" id="weSupplyList"></ul>
+
+                <h3 class="section-title">✅ You Need to Bring</h3>
+                <ul class="supply-list" id="youBringList"></ul>
+
+                <div class="info-box">
+                    <div class="info-box-title">⚡ Time to Video</div>
+                    <div class="info-box-text" id="timeToVideo"></div>
+                </div>
+
+                <div class="info-box" id="goalBox">
+                    <div class="info-box-title">🎯 Integration Goal</div>
+                    <div class="info-box-text" id="goalText"></div>
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                <button class="btn btn-secondary" id="step3Back">Start Over</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration data
+        const integrationOptions = {
+            1: {
+                name: "Full Operation Kit",
+                level: "Level 1: Out-of-the-Box Experience",
+                timeToVideo: "10 minutes",
+                weSupply: [
+                    "Payload camera system",
+                    "Pre-loaded PC with software",
+                    "All necessary cables",
+                    "Joystick controller",
+                    "Mounting jig"
+                ],
+                youBring: [
+                    "Power supply"
+                ],
+                goal: "See live video feed in 10 minutes with zero setup friction.",
+                needsHardware: false
+            },
+            2: {
+                name: "Basic Operation",
+                level: "Level 2: Out-of-the-Box Experience",
+                timeToVideo: "15 minutes",
+                weSupply: [
+                    "Payload camera system",
+                    "HIVE processing unit (CPU)",
+                    "Operation software",
+                    "All necessary cables"
+                ],
+                youBring: [
+                    "PC or laptop",
+                    "Power supply",
+                    "Mounting stand",
+                    "Joystick controller"
+                ],
+                goal: "Live video in 15 minutes using our HIVE unit with your existing lab equipment.",
+                needsHardware: true
+            },
+            3: {
+                name: "Docker Basic Integration",
+                level: "Level 3: Developer Path",
+                timeToVideo: "2 hours",
+                weSupply: [
+                    "Payload camera system",
+                    "Docker image (Jetpack 5.x/6.x compatible)",
+                    "All necessary cables",
+                    "Integration documentation"
+                ],
+                youBring: [
+                    "NVIDIA Jetson Orin NX",
+                    "Type-C connection cable",
+                    "PC or laptop",
+                    "Mounting stand"
+                ],
+                goal: "Development environment up and running in 2 hours on your Jetson Orin platform.",
+                needsHardware: true
+            },
+            4: {
+                name: "HIVE + SDK",
+                level: "Level 4: Professional Integration",
+                timeToVideo: "24-48 hours (basic feed) | ~1 month (full custom control)",
+                weSupply: [
+                    "Payload camera system",
+                    "HIVE optimized hardware",
+                    "SDK API and documentation",
+                    "All necessary cables"
+                ],
+                youBring: [
+                    "Drone or platform",
+                    "Mechanical mounting system",
+                    "Ethernet link connection",
+                    "Development environment"
+                ],
+                goal: "Full control of the 'brain' using your own software on our optimized hardware.",
+                needsHardware: true
+            },
+            5: {
+                name: "Docker + SDK",
+                level: "Level 5: Professional Integration",
+                timeToVideo: "24-48 hours (basic feed) | ~1 month (seamless platform fusion)",
+                weSupply: [
+                    "Payload camera system",
+                    "Docker container",
+                    "SDK API and documentation",
+                    "Integration support"
+                ],
+                youBring: [
+                    "Jetson-based platform",
+                    "Type-C connectivity",
+                    "Custom GCS (Ground Control Station)",
+                    "Development environment"
+                ],
+                goal: "Deep integration where the payload becomes a native part of your Jetson architecture.",
+                needsHardware: true
+            }
+        };
+
+        // State management
+        let currentStep = 1;
+        let selectedOption = null;
+        let hasHardware = {};
+
+        // Elements
+        const step1 = document.getElementById('step1');
+        const step2 = document.getElementById('step2');
+        const step3 = document.getElementById('step3');
+        const step1Next = document.getElementById('step1Next');
+        const step2Back = document.getElementById('step2Back');
+        const step2Next = document.getElementById('step2Next');
+        const step3Back = document.getElementById('step3Back');
+
+        // Step 1: Option selection
+        document.querySelectorAll('#step1 .option-card').forEach(card => {
+            card.addEventListener('click', function() {
+                document.querySelectorAll('#step1 .option-card').forEach(c => c.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedOption = parseInt(this.dataset.option);
+                step1Next.disabled = false;
+            });
+        });
+
+        step1Next.addEventListener('click', () => {
+            if (integrationOptions[selectedOption].needsHardware) {
+                goToStep(2);
+                loadHardwareOptions();
+            } else {
+                goToStep(3);
+                showResults();
+            }
+        });
+
+        // Step 2: Hardware configuration
+        function loadHardwareOptions() {
+            const container = document.getElementById('hardwareOptions');
+            const questions = getHardwareQuestions(selectedOption);
+            
+            container.innerHTML = questions.map((q, idx) => `
+                <div class="option-card hardware-option" data-hardware="${q.key}">
+                    <div class="option-name">${q.question}</div>
+                    <div class="option-description">${q.description}</div>
+                </div>
+            `).join('');
+
+            document.querySelectorAll('.hardware-option').forEach(card => {
+                card.addEventListener('click', function() {
+                    this.classList.toggle('selected');
+                    const key = this.dataset.hardware;
+                    hasHardware[key] = this.classList.contains('selected');
+                });
+            });
+        }
+
+        function getHardwareQuestions(option) {
+            const questions = {
+                2: [
+                    { key: 'pc', question: 'I have a PC/Laptop', description: 'For running the operation software' },
+                    { key: 'joystick', question: 'I have a Joystick', description: 'For camera control' }
+                ],
+                3: [
+                    { key: 'jetson', question: 'I have Jetson Orin NX', description: 'NVIDIA Jetson development board' },
+                    { key: 'pc', question: 'I have a PC/Laptop', description: 'For development and testing' }
+                ],
+                4: [
+                    { key: 'drone', question: 'I have a Drone/Platform', description: 'For payload integration' },
+                    { key: 'mount', question: 'I have Mechanical Mount', description: 'Custom mounting system' }
+                ],
+                5: [
+                    { key: 'jetsonPlatform', question: 'I have Jetson-based Platform', description: 'Your custom platform' },
+                    { key: 'gcs', question: 'I have Custom GCS', description: 'Ground Control Station software' }
+                ]
+            };
+            
+            return questions[option] || [];
+        }
+
+        step2Back.addEventListener('click', () => goToStep(1));
+        step2Next.addEventListener('click', () => {
+            goToStep(3);
+            showResults();
+        });
+
+        // Step 3: Results
+        function showResults() {
+            const config = integrationOptions[selectedOption];
+            
+            document.getElementById('resultsTitle').textContent = config.name;
+            document.getElementById('resultsSubtitle').textContent = config.level;
+            
+            // We supply
+            const weSupplyList = document.getElementById('weSupplyList');
+            weSupplyList.innerHTML = config.weSupply.map(item => `
+                <li class="supply-item">
+                    <span class="supply-icon">📦</span>
+                    <span class="supply-text">${item}</span>
+                </li>
+            `).join('');
+            
+            // You bring
+            const youBringList = document.getElementById('youBringList');
+            youBringList.innerHTML = config.youBring.map(item => `
+                <li class="supply-item">
+                    <span class="supply-icon">✅</span>
+                    <span class="supply-text">${item}</span>
+                </li>
+            `).join('');
+            
+            // Time to video
+            document.getElementById('timeToVideo').textContent = config.timeToVideo;
+            
+            // Goal
+            document.getElementById('goalText').textContent = config.goal;
+        }
+
+        step3Back.addEventListener('click', () => {
+            selectedOption = null;
+            hasHardware = {};
+            document.querySelectorAll('.option-card').forEach(c => c.classList.remove('selected'));
+            step1Next.disabled = true;
+            goToStep(1);
+        });
+
+        // Navigation
+        function goToStep(step) {
+            // Hide all steps
+            step1.classList.add('hidden');
+            step2.classList.add('hidden');
+            step3.classList.add('hidden');
+            
+            // Show current step
+            document.getElementById(`step${step}`).classList.remove('hidden');
+            
+            // Update progress
+            updateProgress(step);
+            currentStep = step;
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function updateProgress(step) {
+            document.querySelectorAll('.progress-step').forEach((el, idx) => {
+                const stepNum = idx + 1;
+                el.classList.remove('active', 'completed');
+                
+                if (stepNum === step) {
+                    el.classList.add('active');
+                } else if (stepNum < step) {
+                    el.classList.add('completed');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
